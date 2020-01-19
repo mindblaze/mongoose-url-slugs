@@ -84,6 +84,7 @@ testSchema.plugin(URLSlugs('first_name last_name', {field: 'myslug'}));
 * **maxLength** (Default: null) - If set, restricts slug length to specified value.
 * **update** (Default: False) - Update slug when dependent fields change.
 * **alwaysRecreate** (Default: False) - If true, will recreate slug regardless of change on dependent fields.
+* **exclude** (Default: []) - Array of reserved words to exclude. If the slug matches a reserved word, a number is added to the end.
 * **index** (Default: True) - Mark slug field as an index in mongoose schema.
 * **indexType** (Default: String) - Mongoose schema slug index type.
 * **indexDefault** (Default: '') - Mongoose schema slug index default value.

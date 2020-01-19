@@ -120,7 +120,8 @@ var defaultOptions = {
   indexTrim: true,
   indexUnique: true,
   indexRequired: false,
-  indexSparse: false
+  indexSparse: false,
+  exclude: [],
 };
 
 module.exports = function(slugFields, options) {
@@ -156,6 +157,7 @@ module.exports = function(slugFields, options) {
           fields = {};
 
       q._id = {$ne: doc._id};
+
       q[options.field] = new RegExp('^' + (slugLimited ? slug.substr(0, slug.length - 2) : slug));
       fields[options.field] = 1;
       model.find(q, fields).exec(function(e, docs) {
@@ -218,11 +220,11 @@ module.exports = function(slugFields, options) {
         if (slugPart !== undefined) toSlugify += slugPart;
         if (!toSlugify.length) toSlugify = options.undefinedVal;
       }
-      
+
       // Skip setting slug if slug dependant fields were not selected
       if (!slugFieldsSelected) return next();
-      
-      
+
+
       if (!options.alwaysRecreate && !slugFieldsModified && currentSlug) return next();
 
       var newSlug = options.generator(removeDiacritics(toSlugify), options.separator);
@@ -237,6 +239,9 @@ module.exports = function(slugFields, options) {
 
       doc.ensureUniqueSlug(newSlug, function(e, finalSlug) {
         if (e) return next(e);
+        if (options.exclude.indexOf(finalSlug) > -1) {
+          finalSlug += "-1";
+        }
         doc.set(options.field, finalSlug);
         doc.markModified(options.field); // sometimes required :)
         next();

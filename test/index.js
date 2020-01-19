@@ -11,19 +11,26 @@ mongoose.connection.on('error', function(err) {
 
 var maxLength = 20,
     TestObjSchema = new mongoose.Schema({name: String, extra: String}),
-    TestObjSparseSchema = new mongoose.Schema({name: String, extra: String});
+    TestObjSparseSchema = new mongoose.Schema({name: String, extra: String}),
+    TestObjExcludeSchema = new mongoose.Schema({name: String, extra: String});
 
 TestObjSchema.plugin(urlSlugs('name', {maxLength: maxLength}));
 TestObjSparseSchema.plugin(urlSlugs('name', {maxLength: maxLength, indexSparse: true}));
+TestObjExcludeSchema.plugin(urlSlugs('name', {maxLength: maxLength, exclude: ['contact']}));
 
 var TestObj = mongoose.model('test_obj', TestObjSchema);
 var TestSparseObj = mongoose.model('test_sparse_obj', TestObjSparseSchema);
+var TestExcludeObj = mongoose.model('test_exclude_obj', TestObjExcludeSchema);
 
 describe('mongoose-url-slugs', function() {
   before(function(done) {
-    TestObj.remove(function() {
-      TestSparseObj.remove(done);
-    });
+    TestObj.remove(done);
+  });
+  before(function(done) {
+    TestSparseObj.remove(done);
+  });
+  before(function(done) {
+    TestExcludeObj.remove(done);
   });
 
   describe('maxLength', function() {
@@ -47,7 +54,7 @@ describe('mongoose-url-slugs', function() {
       });
     });
   });
-  
+
   describe('slug numbering', function() {
     it('does not add unnecessary numbers', function(done) {
       TestObj.create({name: 'Foo Bar'}, function(err, obj) {
@@ -62,7 +69,22 @@ describe('mongoose-url-slugs', function() {
       });
     });
   });
-  
+
+  describe('slug exclusion', function() {
+    it('add a number if slug is a reserved word', function(done) {
+      TestExcludeObj.create({name: 'Contact'}, function(err, obj) {
+        expect(err).to.not.exist;
+        expect(obj.slug).to.equal('contact-1');
+        TestExcludeObj.create({name: 'contact'}, function(err, obj2) {
+          expect(err).to.not.exist;
+          expect(obj2.slug).to.equal('contact-2');
+          expect(obj._id.equals(obj2._id)).to.be.false;
+          done();
+        });
+      });
+    });
+  });
+
   describe('slug', function() {
     it('does not use undefined when slug field was not selected and document was saved', function(done) {
       TestObj.create({name: 'selected', extra: 'test'}, function(err, obj) {
