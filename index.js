@@ -156,7 +156,10 @@ module.exports = function(slugFields, options) {
           fields = {};
 
       q._id = {$ne: doc._id};
-      q[options.field] = new RegExp('^' + (slugLimited ? slug.substr(0, slug.length - 2) : slug));
+
+      var trailing_re = "(" + options.separator + "[0-9]+)?$";
+
+      q[options.field] = new RegExp('^' + (slugLimited ? slug.substr(0, slug.length - 2) : slug ) + trailing_re);
       fields[options.field] = 1;
       model.find(q, fields).exec(function(e, docs) {
         if (e) return cb(e);
