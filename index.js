@@ -212,7 +212,7 @@ module.exports = function(slugFields, options) {
         if (toSlugify.length) toSlugify = toSlugify.substr(0, toSlugify.length - 1);
         else toSlugify = options.undefinedVal;
       } else {
-        if (!doc.isSelected(slugField)) slugFieldsSelected = false;
+        if (!doc.isSelected(slugFields)) slugFieldsSelected = false;
         if (doc.isModified(slugFields)) slugFieldsModified = true;
         var slugPart = doc.get(slugFields, String);
         if (slugPart !== undefined) toSlugify += slugPart;
